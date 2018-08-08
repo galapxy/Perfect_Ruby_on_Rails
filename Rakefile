@@ -1,2 +1,4 @@
 desc 'Hello, Rake Test'
-task
+task :hello do
+    puts 'Hello, Rake!'
+end
