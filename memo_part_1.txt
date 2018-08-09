@@ -1,0 +1,21 @@
+bundler：どのgemファイルの、どのバージョンを使っているのか、を明示する。
+Gemfileにその情報を記述する。 まとめて管理してくれるgem
+ほかのgemはbundler経由で実行したりインストールしたりするのが基本
+
+gem自体はインストール済みでも、Gemfileに記述した後あらためて
+「bundle install」
+を実行。  -> Gemfileに記述されたgemのインストール。Gemfile.lockが生成され、バージョン情報などが記録される。
+
+・CoC（Convention over Configuration）
+ -> 設定より規約。ファイル名やファイルの保管場所が決められているため、設定する必要がなく、共通のルールで開発できる。
+・DRY（Don't Repeat Yourself）
+ -> 繰り返さない
+ ・REST（Representational State Transfer）
+ -> 「全てのリソースに一意となる識別子（URI）がある」「URIを通してリソースを操作する手段を提供する」
+ ・自動テスト
+ -> 自動テストを重要視
+
+ 「$ rails new アプリ名」
+ で、railsにのっとったアプリを作成する
+
+ bundle exec rails としていたものを、./bin/rails で実行できるようになる。<- ver.4の仕様？
