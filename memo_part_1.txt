@@ -10,12 +10,23 @@ gem自体はインストール済みでも、Gemfileに記述した後あらた�
  -> 設定より規約。ファイル名やファイルの保管場所が決められているため、設定する必要がなく、共通のルールで開発できる。
 ・DRY（Don't Repeat Yourself）
  -> 繰り返さない
- ・REST（Representational State Transfer）
+・REST（Representational State Transfer）
  -> 「全てのリソースに一意となる識別子（URI）がある」「URIを通してリソースを操作する手段を提供する」
- ・自動テスト
+・自動テスト
  -> 自動テストを重要視
 
- 「$ rails new アプリ名」
- で、railsにのっとったアプリを作成する
+「$ rails new アプリ名」
+で、railsにのっとったアプリを作成する
 
- bundle exec rails としていたものを、./bin/rails で実行できるようになる。<- ver.4の仕様？
+bundle exec rails としていたものを、./bin/rails で実行できるようになる。<- ver.4の仕様？
+
+POST   /tasks(.:format)          tasks#create
+ -> Postメソッドで/tasksへリクエストを送ると、tasksコントローラーのcreateアクションが実行される
+
+routesの resources :tasks
+ -> resourcesメソッドに:tasksを渡すと、おきまりのCRUD操作用ルーティングを設定してくれる
+
+
+「アクションの中でモデルを通してデータを取得し」
+ -> そうか、アクションっていうのはそういう役割なんだ。
+    
