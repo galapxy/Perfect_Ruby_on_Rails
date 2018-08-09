@@ -18,4 +18,4 @@ gem自体はインストール済みでも、Gemfileに記述した後あらた�
  「$ rails new アプリ名」
  で、railsにのっとったアプリを作成する
 
- bundle exec rails としていたものを、./bin/rails で実行できるようになる。
+ bundle exec rails としていたものを、./bin/rails で実行できるようになる。<- ver.4の仕様？
