@@ -4,4 +4,7 @@ class Book < ActiveRecord::Base
     # default_scope は、デフォルトで適応された状態にできる
 
     belongs_to :publisher
+
+    has_many :book_authors
+    has_many :authors, through: :book_authors
 end
