@@ -53,31 +53,31 @@ book_adminの場合
 
 
 8/11（土）
-・valid?メソッドは、バリデーションに通るかどうかを判定するメソッド。
+@valid?メソッドは、バリデーションに通るかどうかを判定するメソッド。
   valid?を呼ぶだけで、falseの時にはerrorsにエラーメッセージが入る
 
-・保存操作を伴うメソッドに「!」をつけると
+@保存操作を伴うメソッドに「!」をつけると
 　「!」あり：バリデーションに引っかかると例外が発生する（RecordInvalid）
 　「!」なし：例外発生しない
 
-・バリデーションは、errorsに何か入っていると失敗とみなす
+@バリデーションは、errorsに何か入っていると失敗とみなす
 　-> 自分でメッセージを入れれば、独自のバリデーションを作れる
 
-・コールバック
+@コールバック
 　特定の処理に引っ掛けて別の処理を呼ぶこと
 　レコードを作成して保存する一連の流れの間に、任意の処理を挟める
 
-・コールバックポイントについて
+@コールバックポイントについて
 「*_validation」                     -> バリデーションの前後
 「*_create」「*_update」「*_destroy」　-> DBにデータが書き込まれる前後
 「*_save」                           -> 「*_create」「*_update」の前後
 「after_initialze」                  -> ActiveRecord::Baseを継承したモデルがインスタンス化した直後　Book.new,Book.findなど
 「after_find」　　　　　　　　　        -> first/last/find/find_byによって、モデルがインスタンス化した直後
 
-・コールバックに条件をつけることができる
+@コールバックに条件をつけることができる
  シンボル（:if/:unless）=> シンボル（呼び出すメソッド名）
 
- ・モデル内でenumを定義できる
+@モデル内でenumを定義できる
   enum status: %w(reservation now_on_sale end_of_print)
    statusカラムには、文字列、数値、シンボル、どれを渡してもOK
    book.reservation? book.end_of_print? など、述語メソッドを呼び出せる
@@ -88,10 +88,10 @@ irb(main):040:0> book.status
 irb(main):043:0* book[:status]
 => 1
 
-・アクションコールバック
+@アクションコールバック
 　skip_before_actionなど、スーパークラスのアクションコールバックをサブクラスでスキップするクラスメソッドもある。
 
-・ルーティングのresourcesについて
+@ルーティングのresourcesについて
 resources :publishers do
     resources :books
 end
@@ -164,7 +164,7 @@ edit_publisher_book GET    /publishers/:publisher_id/books/:id/edit(.:format) bo
 ・各publisherに対してbookがあるので、publisher_books　publisherは単数形
 
 
-・データが一つしかない（ユーザー情報など）場合のリソース
+@データが一つしかない（ユーザー情報など）場合のリソース
 resource 単数形！
 
 resource :profile
@@ -192,7 +192,7 @@ resource :profile, only: %i{show edit update}
 ※ %i 要素がシンボルの配列を作る
 　%w 配列を作る
 
-・Railsの例外処理
+@Railsの例外処理
 コントローラーが担当する
 rescue_from LoginFailed, with: :login_failed
 
@@ -208,4 +208,37 @@ def aaa
 end
 複数のコントローラーにまたがった例外処理に役立つらしい。
 
-・StrongParameters
+@StrongParameters
+　Mass Assignment機能の脆弱性に対処する機能
+　Mass Assignment：モデルの生成や更新の際、Hashを使って属性を一括設定できる
+user = User.find(1)
+user.name = "Bob"
+user.email = "bob@gmail.com"
+user.save
+↓
+↓
+↓
+user = User.find(1)
+user.update(params[:user])
+※ params[:user] # => { name: "Bob", email: "bob@gmail.com" }
+
+paramsはHTTPリクエストから送られたもの。
+もしadmin: trueというパラメーターが入っていてかつ、Userにadminフラグがある場合は、権限が上書きされてしまう
+
+user = User.find(1)
+user.update(user_params)
+private
+def user_params
+    params.require(:user).parmit(:name, :email)
+end
+ => Mass Assignmentで設定するパラメーターを制限する
+ ・リクエストに:userというkeyが必要
+ ・userの中で受け付けてもいいのは「:name, :email」の２つのkeyのみ
+
+ @ render :show
+ ・描画するテンプレートを探す
+ ・探されたテンプレートを元に、データを展開し、最終的なHTMLを生成する
+ テンプレートファイルの検索規約
+ RAILS_ROOT/app/views/コントローラ名/アクション名.html.erb
+ ！自動でアクション名に対応したビューを表示するように見えたのは、
+　 「render アクション名のシンボル」が省略されていたから！
