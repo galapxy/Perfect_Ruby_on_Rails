@@ -60,3 +60,29 @@ book_adminの場合
 
 ・バリデーションは、errorsに何か入っていると失敗とみなす
 　-> 自分でメッセージを入れれば、独自のバリデーションを作れる
+
+・コールバック
+　特定の処理に引っ掛けて別の処理を呼ぶこと
+　レコードを作成して保存する一連の流れの間に、任意の処理を挟める
+
+・コールバックポイントについて
+「*_validation」                     -> バリデーションの前後
+「*_create」「*_update」「*_destroy」　-> DBにデータが書き込まれる前後
+「*_save」                           -> 「*_create」「*_update」の前後
+「after_initialze」                  -> ActiveRecord::Baseを継承したモデルがインスタンス化した直後　Book.new,Book.findなど
+「after_find」　　　　　　　　　        -> first/last/find/find_byによって、モデルがインスタンス化した直後
+
+・コールバックに条件をつけることができる
+ シンボル（:if/:unless）=> シンボル（呼び出すメソッド名）
+
+ ・モデル内でenumを定義できる
+  enum status: %w(reservation now_on_sale end_of_print)
+   statusカラムには、文字列、数値、シンボル、どれを渡してもOK
+   book.reservation? book.end_of_print? など、述語メソッドを呼び出せる
+※述語メソッド：真偽値を返すメソッド
+
+・確認方法
+irb(main):040:0> book.status
+=> "now_on_sale"
+irb(main):043:0* book[:status]
+=> 1
