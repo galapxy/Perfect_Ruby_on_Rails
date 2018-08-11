@@ -1,5 +1,7 @@
 class Book < ActiveRecord::Base
     enum status: %w(reservation now_on_sale end_of_print)
+    # 数値は0から始まるけど、ハッシュ形式で指定もできる
+    # enum status: {reservation: 0, now_on_sale: 1, end_of_print: 2}
     scope :costly, -> { where("price > ?", 3000) }
     scope :written_about, ->(theme){ where("name like ?", "%#{theme}%") }
     # default_scope は、デフォルトで適応された状態にできる

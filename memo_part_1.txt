@@ -51,6 +51,8 @@ book_adminの場合
 ・has_many/belongs_to　の関連づけをすると、互いのモデルに、相手のモデルの複数形名のメソッドが定義される
 　-> 関連づけされたカラムの情報を引き出したり、関連を追加したりできる
 
+
+8/11（土）
 ・valid?メソッドは、バリデーションに通るかどうかを判定するメソッド。
   valid?を呼ぶだけで、falseの時にはerrorsにエラーメッセージが入る
 
@@ -81,8 +83,129 @@ book_adminの場合
    book.reservation? book.end_of_print? など、述語メソッドを呼び出せる
 ※述語メソッド：真偽値を返すメソッド
 
-・確認方法
 irb(main):040:0> book.status
 => "now_on_sale"
 irb(main):043:0* book[:status]
 => 1
+
+・アクションコールバック
+　skip_before_actionなど、スーパークラスのアクションコールバックをサブクラスでスキップするクラスメソッドもある。
+
+・ルーティングのresourcesについて
+resources :publishers do
+    resources :books
+end
+↓
+↓
+↓
+-------------ここから下がresources :publishersにresources :booksをネストしたルート-----------------------
+             Prefix Verb   URI Pattern                                        Controller#Action
+                    GET    /books/:id(.:format)                               books#show
+    publisher_books GET    /publishers/:publisher_id/books(.:format)          books#index
+                    POST   /publishers/:publisher_id/books(.:format)          books#create
+ new_publisher_book GET    /publishers/:publisher_id/books/new(.:format)      books#new
+edit_publisher_book GET    /publishers/:publisher_id/books/:id/edit(.:format) books#edit
+     publisher_book GET    /publishers/:publisher_id/books/:id(.:format)      books#show
+                    PATCH  /publishers/:publisher_id/books/:id(.:format)      books#update
+                    PUT    /publishers/:publisher_id/books/:id(.:format)      books#update
+                    DELETE /publishers/:publisher_id/books/:id(.:format)      books#destroy
+-----------------------ここから上がresources :publishersのルート----------------------------------------
+         publishers GET    /publishers(.:format)                              publishers#index
+                    POST   /publishers(.:format)                              publishers#create
+      new_publisher GET    /publishers/new(.:format)                          publishers#new
+     edit_publisher GET    /publishers/:id/edit(.:format)                     publishers#edit
+          publisher GET    /publishers/:id(.:format)                          publishers#show
+                    PATCH  /publishers/:id(.:format)                          publishers#update
+                    PUT    /publishers/:id(.:format)                          publishers#update
+                    DELETE /publishers/:id(.:format)                          publishers#destroy
+
+resources :publishers do
+    resources :books
+
+    member do
+      get 'detail'
+    end
+
+    collection do
+      get 'search'
+    end
+  end
+↓
+↓
+↓
+             Prefix Verb   URI Pattern                                        Controller#Action
+                    GET    /books/:id(.:format)                               books#show
+    publisher_books GET    /publishers/:publisher_id/books(.:format)          books#index
+                    POST   /publishers/:publisher_id/books(.:format)          books#create
+ new_publisher_book GET    /publishers/:publisher_id/books/new(.:format)      books#new
+edit_publisher_book GET    /publishers/:publisher_id/books/:id/edit(.:format) books#edit
+     publisher_book GET    /publishers/:publisher_id/books/:id(.:format)      books#show
+                    PATCH  /publishers/:publisher_id/books/:id(.:format)      books#update
+                    PUT    /publishers/:publisher_id/books/:id(.:format)      books#update
+                    DELETE /publishers/:publisher_id/books/:id(.:format)      books#destroy
+--------------------resources :publisher内の member/collection で追加されたルート------------------------
+   detail_publisher GET    /publishers/:id/detail(.:format)                   publishers#detail
+  search_publishers GET    /publishers/search(.:format)                       publishers#search
+--------------------resources :publisher内の member/collection で追加されたルート------------------------
+         publishers GET    /publishers(.:format)                              publishers#index
+                    POST   /publishers(.:format)                              publishers#create
+      new_publisher GET    /publishers/new(.:format)                          publishers#new
+     edit_publisher GET    /publishers/:id/edit(.:format)                     publishers#edit
+          publisher GET    /publishers/:id(.:format)                          publishers#show
+                    PATCH  /publishers/:id(.:format)                          publishers#update
+                    PUT    /publishers/:id(.:format)                          publishers#update
+                    DELETE /publishers/:id(.:format)                          publishers#destroy
+
+もしbooksのブロックないで追加すると　detail_publisher_book
+                                search_publisher_books
+になる！
+・detailはmember == 個別のデータにたいしてなのでbook
+・searchはcollection == 全体に対してなので　　books
+・各publisherに対してbookがあるので、publisher_books　publisherは単数形
+
+
+・データが一つしかない（ユーザー情報など）場合のリソース
+resource 単数形！
+
+resource :profile
+↓
+↓
+↓
+            profile POST   /profile(.:format)                                 profiles#create
+        new_profile GET    /profile/new(.:format)                             profiles#new
+       edit_profile GET    /profile/edit(.:format)                            profiles#edit
+                    GET    /profile(.:format)                                 profiles#show
+                    PATCH  /profile(.:format)                                 profiles#update
+                    PUT    /profile(.:format)                                 profiles#update
+                    DELETE /profile(.:format)                                 profiles#destroy
+・データが一つしかないので、①indexアクションがない、②:idによる絞り込みがない
+
+resource :profile, only: %i{show edit update}
+↓
+↓
+↓
+       edit_profile GET    /profile/edit(.:format)                            profiles#edit
+            profile GET    /profile(.:format)                                 profiles#show
+                    PATCH  /profile(.:format)                                 profiles#update
+                    PUT    /profile(.:format)                                 profiles#update
+・「only:」で指定したアクションへのルートだけ設定される
+※ %i 要素がシンボルの配列を作る
+　%w 配列を作る
+
+・Railsの例外処理
+コントローラーが担当する
+rescue_from LoginFailed, with: :login_failed
+
+def login_failed
+    render templete: 'shared/login_failed', status: 404
+end
+
+各アクションで任意のタイミングで例外を投げれば、「login_failed」に処理を飛ばせる
+def aaa
+    #
+    raise LoginFailed unless ###
+    # 
+end
+複数のコントローラーにまたがった例外処理に役立つらしい。
+
+・StrongParameters
