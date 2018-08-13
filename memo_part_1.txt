@@ -235,10 +235,37 @@ end
  ・リクエストに:userというkeyが必要
  ・userの中で受け付けてもいいのは「:name, :email」の２つのkeyのみ
 
- @ render :show（メソッド名のシンボル）
+@render :show（メソッド名のシンボル）
  ・描画するテンプレートを探す
  ・探されたテンプレートを元に、データを展開し、最終的なHTMLを生成する
  テンプレートファイルの検索規約
  RAILS_ROOT/app/views/コントローラ名/アクション名.html.erb
  ！自動でアクション名に対応したビューを表示するように見えたのは、
 　 「render アクション名のシンボル」が省略されていたから！
+
+＠ビューの出し分け　-> repond_to　を使う
+アクションshow内
+respond_to do |format|
+	format.html               # => render :show, format: :html と同じ意味
+	format.csv                # => show.csv.erbをダウンロードする
+end
+「コントローラ名/アクション名.フォーマット.エンジン」で探しに行く
+
+@redirect_to => リダイレクト処理
+books_path　でも　URLでも渡せる :statusでステータスコードを指定できる
+redirect_to books_path, status: :found
+redirect_to books_path, status: 302
+
+@Viewの使い回す部分を切り出す
+renderメソッドの:partialオプション
+ render partial: 'form' # => 「_form」という名前のテンプレートを探しに行く
+
+@layoutsで典型的な部分を使い回す
+application/layouts/ に レイアウト用のテンプレートを配置する。
+デフォルトでは application.html.erb が配置されている。
+
+yieldの部分に、それぞれのページのコンテンツが展開される
+ -> edit.html.erb　などの各ファイルには、bodyタグの中身だけ記載する
+
+複数のレイアウトから特定のレイアウトを指定するには、renderメソッドのlayoutオプション（単数形！！！）を使う。
+render :show, layout: "awesome_book"
