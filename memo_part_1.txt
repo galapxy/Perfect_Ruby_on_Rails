@@ -269,3 +269,21 @@ yieldの部分に、それぞれのページのコンテンツが展開される
 
 複数のレイアウトから特定のレイアウトを指定するには、renderメソッドのlayoutオプション（単数形！！！）を使う。
 render :show, layout: "awesome_book"
+
+@variantsでテンプレートを切り替える
+controller内でrequest.variant に、:tablet、:mobileなどを代入する
+=> 「テンプレート名+request.variantの値」というテンプレートが選択されるようになる
+例）「edit.html.erb」 -> 「edit.html+tablet.erb」
+
+@ERB、Haml、Slim
+Haml、Slimはgemとしてインストールする。
+-で始まる行は実行結果を表示する、など、ERBを簡潔にした感じ。
+
+@ビューヘルパーについて
+・パスを構築する
+url_for(controller: :users, action: :index, id: 1234)
+  => /users/1234
+
+・form_tag,form_for
+フォームを作成。form_tag => 単純なフォーム
+　            form_for => モデルの情報を元に内容を埋めたり、エラーを表示したりする。
