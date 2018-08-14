@@ -47,3 +47,269 @@ book_adminの場合
 ・作者/著者
 
 ・references複数形。単数形と間違えると、どうにもならなくなる。
+
+・has_many/belongs_to　の関連づけをすると、互いのモデルに、相手のモデルの複数形名のメソッドが定義される
+　-> 関連づけされたカラムの情報を引き出したり、関連を追加したりできる
+
+
+8/11（土）
+@valid?メソッドは、バリデーションに通るかどうかを判定するメソッド。
+  valid?を呼ぶだけで、falseの時にはerrorsにエラーメッセージが入る
+
+@保存操作を伴うメソッドに「!」をつけると
+　「!」あり：バリデーションに引っかかると例外が発生する（RecordInvalid）
+　「!」なし：例外発生しない
+
+@バリデーションは、errorsに何か入っていると失敗とみなす
+　-> 自分でメッセージを入れれば、独自のバリデーションを作れる
+
+@コールバック
+　特定の処理に引っ掛けて別の処理を呼ぶこと
+　レコードを作成して保存する一連の流れの間に、任意の処理を挟める
+
+@コールバックポイントについて
+「*_validation」                     -> バリデーションの前後
+「*_create」「*_update」「*_destroy」　-> DBにデータが書き込まれる前後
+「*_save」                           -> 「*_create」「*_update」の前後
+「after_initialze」                  -> ActiveRecord::Baseを継承したモデルがインスタンス化した直後　Book.new,Book.findなど
+「after_find」　　　　　　　　　        -> first/last/find/find_byによって、モデルがインスタンス化した直後
+
+@コールバックに条件をつけることができる
+ シンボル（:if/:unless）=> シンボル（呼び出すメソッド名）
+
+@モデル内でenumを定義できる
+  enum status: %w(reservation now_on_sale end_of_print)
+   statusカラムには、文字列、数値、シンボル、どれを渡してもOK
+   book.reservation? book.end_of_print? など、述語メソッドを呼び出せる
+※述語メソッド：真偽値を返すメソッド
+
+irb(main):040:0> book.status
+=> "now_on_sale"
+irb(main):043:0* book[:status]
+=> 1
+
+@アクションコールバック
+　skip_before_actionなど、スーパークラスのアクションコールバックをサブクラスでスキップするクラスメソッドもある。
+
+@ルーティングのresourcesについて
+resources :publishers do
+    resources :books
+end
+↓
+↓
+↓
+-------------ここから下がresources :publishersにresources :booksをネストしたルート-----------------------
+             Prefix Verb   URI Pattern                                        Controller#Action
+                    GET    /books/:id(.:format)                               books#show
+    publisher_books GET    /publishers/:publisher_id/books(.:format)          books#index
+                    POST   /publishers/:publisher_id/books(.:format)          books#create
+ new_publisher_book GET    /publishers/:publisher_id/books/new(.:format)      books#new
+edit_publisher_book GET    /publishers/:publisher_id/books/:id/edit(.:format) books#edit
+     publisher_book GET    /publishers/:publisher_id/books/:id(.:format)      books#show
+                    PATCH  /publishers/:publisher_id/books/:id(.:format)      books#update
+                    PUT    /publishers/:publisher_id/books/:id(.:format)      books#update
+                    DELETE /publishers/:publisher_id/books/:id(.:format)      books#destroy
+-----------------------ここから上がresources :publishersのルート----------------------------------------
+         publishers GET    /publishers(.:format)                              publishers#index
+                    POST   /publishers(.:format)                              publishers#create
+      new_publisher GET    /publishers/new(.:format)                          publishers#new
+     edit_publisher GET    /publishers/:id/edit(.:format)                     publishers#edit
+          publisher GET    /publishers/:id(.:format)                          publishers#show
+                    PATCH  /publishers/:id(.:format)                          publishers#update
+                    PUT    /publishers/:id(.:format)                          publishers#update
+                    DELETE /publishers/:id(.:format)                          publishers#destroy
+
+resources :publishers do
+    resources :books
+
+    member do
+      get 'detail'
+    end
+
+    collection do
+      get 'search'
+    end
+  end
+↓
+↓
+↓
+             Prefix Verb   URI Pattern                                        Controller#Action
+                    GET    /books/:id(.:format)                               books#show
+    publisher_books GET    /publishers/:publisher_id/books(.:format)          books#index
+                    POST   /publishers/:publisher_id/books(.:format)          books#create
+ new_publisher_book GET    /publishers/:publisher_id/books/new(.:format)      books#new
+edit_publisher_book GET    /publishers/:publisher_id/books/:id/edit(.:format) books#edit
+     publisher_book GET    /publishers/:publisher_id/books/:id(.:format)      books#show
+                    PATCH  /publishers/:publisher_id/books/:id(.:format)      books#update
+                    PUT    /publishers/:publisher_id/books/:id(.:format)      books#update
+                    DELETE /publishers/:publisher_id/books/:id(.:format)      books#destroy
+--------------------resources :publisher内の member/collection で追加されたルート------------------------
+   detail_publisher GET    /publishers/:id/detail(.:format)                   publishers#detail
+  search_publishers GET    /publishers/search(.:format)                       publishers#search
+--------------------resources :publisher内の member/collection で追加されたルート------------------------
+         publishers GET    /publishers(.:format)                              publishers#index
+                    POST   /publishers(.:format)                              publishers#create
+      new_publisher GET    /publishers/new(.:format)                          publishers#new
+     edit_publisher GET    /publishers/:id/edit(.:format)                     publishers#edit
+          publisher GET    /publishers/:id(.:format)                          publishers#show
+                    PATCH  /publishers/:id(.:format)                          publishers#update
+                    PUT    /publishers/:id(.:format)                          publishers#update
+                    DELETE /publishers/:id(.:format)                          publishers#destroy
+
+もしbooksのブロックないで追加すると　detail_publisher_book
+                                search_publisher_books
+になる！
+・detailはmember == 個別のデータにたいしてなのでbook
+・searchはcollection == 全体に対してなので　　books
+・各publisherに対してbookがあるので、publisher_books　publisherは単数形
+
+
+@データが一つしかない（ユーザー情報など）場合のリソース
+resource 単数形！
+
+resource :profile
+↓
+↓
+↓
+            profile POST   /profile(.:format)                                 profiles#create
+        new_profile GET    /profile/new(.:format)                             profiles#new
+       edit_profile GET    /profile/edit(.:format)                            profiles#edit
+                    GET    /profile(.:format)                                 profiles#show
+                    PATCH  /profile(.:format)                                 profiles#update
+                    PUT    /profile(.:format)                                 profiles#update
+                    DELETE /profile(.:format)                                 profiles#destroy
+・データが一つしかないので、①indexアクションがない、②:idによる絞り込みがない
+
+resource :profile, only: %i{show edit update}
+↓
+↓
+↓
+       edit_profile GET    /profile/edit(.:format)                            profiles#edit
+            profile GET    /profile(.:format)                                 profiles#show
+                    PATCH  /profile(.:format)                                 profiles#update
+                    PUT    /profile(.:format)                                 profiles#update
+・「only:」で指定したアクションへのルートだけ設定される
+※ %i 要素がシンボルの配列を作る
+　%w 配列を作る
+
+@Railsの例外処理
+コントローラーが担当する
+rescue_from LoginFailed, with: :login_failed
+
+def login_failed
+    render templete: 'shared/login_failed', status: 404
+end
+
+各アクションで任意のタイミングで例外を投げれば、「login_failed」に処理を飛ばせる
+def aaa
+    #
+    raise LoginFailed unless ###
+    # 
+end
+複数のコントローラーにまたがった例外処理に役立つらしい。
+
+@StrongParameters
+　Mass Assignment機能の脆弱性に対処する機能
+　Mass Assignment：モデルの生成や更新の際、Hashを使って属性を一括設定できる
+user = User.find(1)
+user.name = "Bob"
+user.email = "bob@gmail.com"
+user.save
+↓
+↓
+↓
+user = User.find(1)
+user.update(params[:user])
+※ params[:user] # => { name: "Bob", email: "bob@gmail.com" }
+
+paramsはHTTPリクエストから送られたもの。
+もしadmin: trueというパラメーターが入っていてかつ、Userにadminフラグがある場合は、権限が上書きされてしまう
+
+user = User.find(1)
+user.update(user_params)
+private
+def user_params
+    params.require(:user).parmit(:name, :email)
+end
+ => Mass Assignmentで設定するパラメーターを制限する
+ ・リクエストに:userというkeyが必要
+ ・userの中で受け付けてもいいのは「:name, :email」の２つのkeyのみ
+
+@render :show（メソッド名のシンボル）
+ ・描画するテンプレートを探す
+ ・探されたテンプレートを元に、データを展開し、最終的なHTMLを生成する
+ テンプレートファイルの検索規約
+ RAILS_ROOT/app/views/コントローラ名/アクション名.html.erb
+ ！自動でアクション名に対応したビューを表示するように見えたのは、
+　 「render アクション名のシンボル」が省略されていたから！
+
+＠ビューの出し分け　-> repond_to　を使う
+アクションshow内
+respond_to do |format|
+	format.html               # => render :show, format: :html と同じ意味
+	format.csv                # => show.csv.erbをダウンロードする
+end
+「コントローラ名/アクション名.フォーマット.エンジン」で探しに行く
+
+@redirect_to => リダイレクト処理
+books_path　でも　URLでも渡せる :statusでステータスコードを指定できる
+redirect_to books_path, status: :found
+redirect_to books_path, status: 302
+
+@Viewの使い回す部分を切り出す
+renderメソッドの:partialオプション
+ render partial: 'form' # => 「_form」という名前のテンプレートを探しに行く
+
+@layoutsで典型的な部分を使い回す
+application/layouts/ に レイアウト用のテンプレートを配置する。
+デフォルトでは application.html.erb が配置されている。
+
+yieldの部分に、それぞれのページのコンテンツが展開される
+ -> edit.html.erb　などの各ファイルには、bodyタグの中身だけ記載する
+
+複数のレイアウトから特定のレイアウトを指定するには、renderメソッドのlayoutオプション（単数形！！！）を使う。
+render :show, layout: "awesome_book"
+
+@variantsでテンプレートを切り替える
+controller内でrequest.variant に、:tablet、:mobileなどを代入する
+=> 「テンプレート名+request.variantの値」というテンプレートが選択されるようになる
+例）「edit.html.erb」 -> 「edit.html+tablet.erb」
+
+@ERB、Haml、Slim
+Haml、Slimはgemとしてインストールする。
+-で始まる行は実行結果を表示する、など、ERBを簡潔にした感じ。
+
+@ビューヘルパーについて
+・パスを構築する
+url_for(controller: :users, action: :index, id: 1234)
+  => /users/1234
+
+・フォームを作る
+form_tag,form_for
+フォームを作成。form_tag => 単純なフォーム
+　            form_for => モデルの情報を元に内容を埋めたり、エラーを表示したりする。
+
+・スタイルシートやJavascriptのファイルを指定する
+stylesheet_link_tag/javascript_include_tag
+
+・時刻の差分を表示（現在と指定時刻）
+distance_of_time_in_words_to_now 0.5.days.ago
+# => "about 12 hours"
+
+・数字の区切りを入れる
+number_with_delimiter 
+
+@独自ヘルパーの定義
+「app/helper」に定義
+アプリケーション全体で使うものであれば
+「app/helper/application_helper.rb」に定義
+コントローラーごとに使うものは
+「app/helper/books（コントローラ名）_helper.rb」に定義
+ファイルは自動生成されている
+
+
+@APIとしてのRails
+ビューの責務＝HTMLを生成する　それをブラウザが表示する
+「クライアント」と「サーバー」がはっきり分かれる設計も出てきた
+-> HTMLではなく、別のフォーマットで情報を渡す
+JSON APIであれば、ビューの仕事はJSONを生成すること
