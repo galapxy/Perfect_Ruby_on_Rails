@@ -284,6 +284,32 @@ Haml、Slimはgemとしてインストールする。
 url_for(controller: :users, action: :index, id: 1234)
   => /users/1234
 
-・form_tag,form_for
+・フォームを作る
+form_tag,form_for
 フォームを作成。form_tag => 単純なフォーム
 　            form_for => モデルの情報を元に内容を埋めたり、エラーを表示したりする。
+
+・スタイルシートやJavascriptのファイルを指定する
+stylesheet_link_tag/javascript_include_tag
+
+・時刻の差分を表示（現在と指定時刻）
+distance_of_time_in_words_to_now 0.5.days.ago
+# => "about 12 hours"
+
+・数字の区切りを入れる
+number_with_delimiter 
+
+@独自ヘルパーの定義
+「app/helper」に定義
+アプリケーション全体で使うものであれば
+「app/helper/application_helper.rb」に定義
+コントローラーごとに使うものは
+「app/helper/books（コントローラ名）_helper.rb」に定義
+ファイルは自動生成されている
+
+
+@APIとしてのRails
+ビューの責務＝HTMLを生成する　それをブラウザが表示する
+「クライアント」と「サーバー」がはっきり分かれる設計も出てきた
+-> HTMLではなく、別のフォーマットで情報を渡す
+JSON APIであれば、ビューの仕事はJSONを生成すること
